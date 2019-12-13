@@ -1,0 +1,66 @@
+#pragma strict
+
+using System.Collections;
+using UnityEngine;
+
+[RequireComponent(typeof(MeshFilter))]
+[RequireComponent(typeof(MeshRenderer))]
+
+//Combines objects with the same and only one material.
+
+//ONLY OBJECTS USING THE SAME MATERIAL CAN BE COMBINED 
+//ONLY ONE MATERIAL can be attached to the objects, and it needs to be the same one. 
+
+//ADD the MeshCombinerEditor script to you Editor folder. If you don't have one, create one. 
+
+ //1. Create empty object.
+ //2. Add MeshCombiners script
+ //3. Add the material of the objects to be combined to the mesh renderer slot in the inspector
+ //4. Put the objects to be combined as children to you gameobject you created.
+ //5. Click on the massive cylinder that will be above the gameobjects you created.
+
+public class MeshCombiner : MonoBehaviour
+{
+   
+
+    public void CombineMeshes()
+    {
+        Quaternion oldRot = transform.rotation;
+        Vector3 oldpos = transform.position;
+
+        transform.rotation = Quaternion.identity;
+        transform.position = Vector3.zero;
+
+        MeshFilter[] meshFilters = GetComponentsInChildren<MeshFilter>();
+        Mesh finalMesh = new Mesh();
+        Debug.Log(finalMesh.name + " has " + finalMesh.subMeshCount + " submeshes!");
+
+        Debug.Log(name + " is combining meshes!");
+
+        CombineInstance[] combiners = new CombineInstance[meshFilters.Length];
+        for (int a = 0; a < meshFilters.Length; a++)
+
+        {
+            if (meshFilters[a].transform == transform || meshFilters[a] == null)
+            {
+                continue;
+            }
+
+            combiners[a].subMeshIndex = 0;
+            combiners[a].mesh = meshFilters[a].sharedMesh;
+            combiners[a].transform = meshFilters[a].transform.localToWorldMatrix;
+        }
+
+        finalMesh.CombineMeshes(combiners);
+        GetComponent<MeshFilter>().sharedMesh = finalMesh;
+
+        transform.rotation = oldRot;
+        transform.position = oldpos;
+
+        for(int a = 0; a < transform.childCount; a++)
+        {
+            transform.GetChild(a).gameObject.SetActive(false);
+        }
+    }
+
+}
